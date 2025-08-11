@@ -2,13 +2,18 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "images/uploads"
-public_folder: "/images/uploads"
+media_folder: "images"        # Onde os uploads ficam salvos no repositório
+public_folder: "/images"      # Caminho público dos uploads
 locale: "pt"
 
 collections:
+
+  # =======================
+  # TEMA (cores, botões, seções)
+  # Arquivo: content/theme.json
+  # =======================
   - name: theme
-    label: "Tema"
+    label: "Tema (cores, botões, seções)"
     delete: false
     files:
       - file: "content/theme.json"
@@ -16,54 +21,128 @@ collections:
         label: "Configurações do Tema"
         format: json
         fields:
-          - { label: "Cor primária", name: primaryColor, widget: color, allowInput: true }
-          - { label: "Cor secundária", name: secondaryColor, widget: color, allowInput: true, required: false }
-          - { label: "Cor de fundo", name: backgroundColor, widget: color, allowInput: true, required: false }
-          - { label: "Cor do texto", name: textColor, widget: color, allowInput: true, required: false }
-          - { label: "Cor dos botões", name: buttonColor, widget: color, allowInput: true, required: false }
-          - { label: "WhatsApp (com DDI)", name: whatsapp, widget: string, required: false }
-          - { label: "Mensagem do WhatsApp", name: whatsappMessage, widget: string, required: false }
-          - { label: "Mostrar seção Sobre", name: showAbout, widget: boolean, default: true }
 
+          # -------- CORES --------
+          - label: "Cores do site"
+            name: cores
+            widget: object
+            hint: "Ajuste as cores principais do site. Todas podem ser alteradas depois."
+            fields:
+              - { label: "Cor dos botões (CTA)", name: buttonColor, widget: color, allowInput: true, default: "#97af7d", hint: "Usada nos botões como 'Fazer pedido'." }
+              - { label: "Cor dos títulos e links (destaque)", name: primaryColor, widget: color, allowInput: true, default: "#58410d", hint: "Títulos, links e elementos de destaque." }
+              - { label: "Cor de detalhes menores (opcional)", name: secondary, widget: color, allowInput: true, required: false, default: "#7a5c4b", hint: "Ícones, bordas e pequenos detalhes." }
+              - { label: "Fundo geral do site", name: bg, widget: color, allowInput: true, default: "#f8f6f3", hint: "Plano de fundo das páginas." }
+              - { label: "Cor do texto principal", name: text, widget: color, allowInput: true, default: "#5a4b42", hint: "Parágrafos e descrições." }
+              - { label: "Fundo das caixinhas (cards)", name: card, widget: color, allowInput: true, default: "#ffffff", hint: "Blocos de produto, políticas e outras caixas." }
+              # Estes dois existem no seu theme.json; deixe como estão (opcionais)
+              - { label: "Cor primária (backup, opcional)", name: primary, widget: color, allowInput: true, required: false, default: "#d9a5a0", hint: "Não obrigatório; mantido por compatibilidade." }
+              - { label: "Cor de fundo alternativa (opcional)", name: backgroundColor, widget: color, allowInput: true, required: false, default: "#e4e4d3", hint: "Não obrigatório; mantido por compatibilidade." }
+
+          # -------- BOTÃO DO TOPO --------
+          - label: "Botão do topo (Header)"
+            name: headerCta
+            widget: object
+            collapsed: true
+            fields:
+              - { label: "Texto do botão", name: label, widget: string, required: false, hint: "Ex.: 'Pedir no WhatsApp'." }
+              - { label: "Link do botão",  name: href,  widget: string, required: false, hint: "Ex.: https://wa.me/SEUNUMERO?text=mensagem" }
+
+          # -------- MARCA / WHATSAPP --------
+          - { label: "Marca (texto no topo)", name: brandText, widget: string, required: false, hint: "Nome exibido na barra superior." }
+          - { label: "WhatsApp (com DDI)",    name: whatsapp,  widget: string, required: false, hint: "Ex.: +55 11 91234-5678" }
+          - { label: "Mensagem padrão do WhatsApp", name: whatsappMessage, widget: text, required: false, hint: "Texto que vai junto no link do WhatsApp." }
+
+          # -------- SEÇÕES DO SITE --------
+          - { label: "Mostrar a seção 'Sobre'", name: showAbout, widget: boolean, default: true, required: false, hint: "Desligue para esconder a seção 'Sobre'." }
+          - label: "Seções visíveis"
+            name: sectionsEnabled
+            widget: object
+            hint: "Ative/desative as seções do site."
+            fields:
+              - { label: "Banner (Hero)",  name: hero,         widget: boolean, default: true }
+              - { label: "Sobre",          name: about,        widget: boolean, default: true }
+              - { label: "Cardápio",       name: menu,         widget: boolean, default: true }
+              - { label: "Decorações",     name: decorations,  widget: boolean, default: true }
+              - { label: "Galeria (opcional)", name: gallery,  widget: boolean, default: false }
+              - { label: "Personalizado",  name: custom,       widget: boolean, default: true }
+              - { label: "Informações",    name: policies,     widget: boolean, default: true }
+              - { label: "FAQ",            name: faq,          widget: boolean, default: true }
+
+          - label: "Ordem das seções (arraste para reordenar)"
+            name: sectionsOrder
+            widget: list
+            allow_add: false
+            default: ["hero","about","menu","decorations","custom","policies","faq"]
+            field:
+              label: "Seção"
+              name: item
+              widget: select
+              options:
+                - { label: "Banner (Hero)", value: "hero" }
+                - { label: "Sobre",         value: "about" }
+                - { label: "Cardápio",      value: "menu" }
+                - { label: "Decorações",    value: "decorations" }
+                - { label: "Galeria",       value: "gallery" }
+                - { label: "Personalizado", value: "custom" }
+                - { label: "Informações",   value: "policies" }
+                - { label: "FAQ",           value: "faq" }
+
+  # =======================
+  # BANNER (HERO)
+  # Arquivo: content/hero.json
+  # =======================
   - name: hero
-    label: "Hero"
+    label: "Banner (Hero)"
     delete: false
     files:
       - file: "content/hero.json"
         name: hero
-        label: "Seção Hero"
+        label: "Conteúdo do Banner"
         format: json
         fields:
-          - { label: "Título", name: title, widget: string }
+          - { label: "Título",    name: title,    widget: string }
           - { label: "Subtítulo", name: subtitle, widget: text, required: false }
-          - { label: "Imagem", name: image, widget: image, required: false }
-          - { label: "Opacidade do overlay", name: overlayOpacity, widget: number, min: 0, max: 1, step: 0.05, required: false }
-          - { label: "Texto do botão", name: ctaText, widget: string, required: false }
-          - { label: "Link do botão", name: ctaLink, widget: string, required: false }
+          - { label: "Imagem do banner", name: image, widget: image, required: false, hint: "Tamanho recomendado ~1440×900." }
+          - { label: "Overlay do banner (ex.: linear-gradient(...))", name: overlay, widget: string, required: false, hint: "Controla o escurecimento por cima da imagem." }
+          - label: "Botão do banner"
+            name: cta
+            widget: object
+            collapsed: true
+            fields:
+              - { label: "Texto", name: label, widget: string, required: false, hint: "Ex.: Ver Cardápio" }
+              - { label: "Link",  name: href,  widget: string, required: false, hint: "Ex.: #menu" }
 
+  # =======================
+  # SOBRE
+  # Arquivo: content/about.json
+  # =======================
   - name: about
     label: "Sobre"
     delete: false
     files:
       - file: "content/about.json"
         name: about
-        label: "Seção Sobre"
+        label: "Conteúdo do Sobre"
         format: json
         fields:
           - { label: "Título", name: title, widget: string }
-          - { label: "Texto", name: text, widget: text }
-          - { label: "Imagem", name: image, widget: image, required: false }
-          - label: "Características"
+          - { label: "Texto",  name: text,  widget: text }
+          - { label: "Imagem", name: image, widget: image, required: false, hint: "Foto da seção Sobre." }
+          - label: "Diferenciais (opcional)"
             name: features
             widget: list
-            allow_add: true
+            collapsed: true
             fields:
-              - { label: "Ícone", name: icon, widget: image, required: false }
+              - { label: "Ícone",  name: icon,  widget: image, required: false }
               - { label: "Título", name: title, widget: string }
-              - { label: "Texto", name: text, widget: text }
+              - { label: "Texto",  name: text,  widget: text }
 
+  # =======================
+  # CATEGORIAS
+  # Arquivo: content/categories.json  (formato: {id, name})
+  # =======================
   - name: categories
-    label: "Categorias"
+    label: "Categorias do Cardápio"
     files:
       - file: "content/categories.json"
         name: categories
@@ -74,39 +153,47 @@ collections:
             name: items
             widget: list
             fields:
-              - { label: "Nome", name: name, widget: string }
-              - { label: "Slug", name: slug, widget: string }
-              - { label: "Ordem", name: order, widget: number, required: false }
+              - { label: "ID (fixo, minúsculo)", name: id,   widget: string, hint: "Ex.: especiais, tradicionais. Não alterar depois." }
+              - { label: "Nome exibido",         name: name, widget: string, hint: "Ex.: Especiais, Tradicionais." }
 
+  # =======================
+  # PRODUTOS
+  # Arquivo: content/products.json
+  # =======================
   - name: products
     label: "Produtos"
     files:
       - file: "content/products.json"
         name: products
-        label: "Produtos"
+        label: "Lista de Produtos"
         format: json
         fields:
           - label: "Itens"
             name: items
             widget: list
             allow_add: true
+            summary: "{{name}} — {{price}}"
             fields:
-              - { label: "Ativo", name: active, widget: boolean, default: true }
-              - { label: "Nome", name: name, widget: string }
-              - { label: "Descrição", name: description, widget: text, required: false }
-              - { label: "Categoria (slug)", name: category, widget: string, required: false }
-              - { label: "Preço", name: price, widget: string, required: false }
-              - { label: "Imagem", name: image, widget: image, required: false }
-              - label: "Tamanhos"
+              - { label: "Ativo",        name: active,      widget: boolean, default: true, required: false, hint: "Desligue para esconder o produto sem apagar." }
+              - { label: "Nome",         name: name,        widget: string }
+              - { label: "Descrição",    name: description, widget: text, required: false }
+              - { label: "Categoria (ID)", name: category,  widget: string, hint: "Use um ID de categoria (ex.: especiais, tradicionais)" }
+              - { label: "Preço",        name: price,       widget: string, required: false, hint: "Ex.: R$ 90" }
+              - { label: "Imagem",       name: image,       widget: image,  required: false, hint: "Foto do produto." }
+              - label: "Tamanhos (opcional)"
                 name: sizes
                 widget: list
                 required: false
                 fields:
-                  - { label: "Nome", name: label, widget: string }
-                  - { label: "Preço", name: price, widget: string, required: false }
-              - { label: "Badge", name: badge, widget: select, required: false, options: ["Novo", "Mais vendido", "Promoção"] }
-              - { label: "Ordem", name: order, widget: number, required: false }
+                  - { label: "Nome do tamanho",  name: label, widget: string, hint: "Ex.: P, M, G" }
+                  - { label: "Preço",            name: price, widget: string, required: false, hint: "Ex.: R$ 120" }
+              - { label: "Selo (opcional)", name: badge, widget: select, required: false, options: ["Novo", "Mais vendido", "Promoção"] }
+              - { label: "Ordem (opcional)", name: order, widget: number, required: false, hint: "Use para controlar a ordem." }
 
+  # =======================
+  # DECORAÇÕES
+  # Arquivo: content/decorations.json
+  # =======================
   - name: decorations
     label: "Decorações"
     files:
@@ -115,46 +202,67 @@ collections:
         label: "Decorações"
         format: json
         fields:
+          - { label: "Título",    name: title,    widget: string, required: false }
+          - { label: "Subtítulo", name: subtitle, widget: text,   required: false }
           - label: "Itens"
             name: items
             widget: list
+            summary: "{{caption}}"
             fields:
-              - { label: "Nome", name: name, widget: string }
-              - { label: "Imagem", name: image, widget: image, required: false }
+              - { label: "Imagem",  name: image,   widget: image, hint: "Ex.: images/gallery1.png" }
+              - { label: "Legenda (opcional)", name: caption, widget: string, required: false }
 
+  # =======================
+  # GALERIA (opcional)
+  # Arquivo: content/gallery.json
+  # =======================
   - name: gallery
-    label: "Galeria"
+    label: "Galeria (opcional)"
     files:
       - file: "content/gallery.json"
         name: gallery
         label: "Galeria"
         format: json
         fields:
-          - label: "Imagens"
-            name: images
-            widget: list
-            field:
-              label: "Imagem"
-              name: image
-              widget: image
-
-  - name: policies
-    label: "Informações/Políticas"
-    files:
-      - file: "content/policies.json"
-        name: policies
-        label: "Informações/Políticas"
-        format: json
-        fields:
-          - { label: "Título", name: title, widget: string }
           - label: "Itens"
             name: items
             widget: list
             fields:
-              - { label: "Título", name: title, widget: string }
-              - { label: "Texto", name: text, widget: text }
-              - { label: "Ícone", name: icon, widget: image, required: false }
+              - { label: "Imagem", name: image, widget: image }
+              - { label: "Descrição/ALT (opcional)", name: alt, widget: string, required: false, hint: "Ajuda no Google e acessibilidade." }
 
+  # =======================
+  # INFORMAÇÕES / POLÍTICAS
+  # Arquivo: content/policies.json  (introTitle, introText, items[] com {title, items[]})
+  # =======================
+  - name: policies
+    label: "Informações / Políticas"
+    files:
+      - file: "content/policies.json"
+        name: policies
+        label: "Informações / Políticas"
+        format: json
+        fields:
+          - { label: "Título de introdução", name: introTitle, widget: string }
+          - { label: "Texto de introdução",  name: introText,  widget: text }
+          - label: "Blocos"
+            name: items
+            widget: list
+            summary: "{{title}}"
+            fields:
+              - { label: "Título do bloco", name: title, widget: string }
+              - label: "Itens do bloco"
+                name: items
+                widget: list
+                field:
+                  label: "Linha"
+                  name: line
+                  widget: string
+
+  # =======================
+  # FAQ
+  # Arquivo: content/faq.json  (items[] com q/a)
+  # =======================
   - name: faq
     label: "FAQ"
     files:
@@ -166,6 +274,7 @@ collections:
           - label: "Perguntas"
             name: items
             widget: list
+            summary: "{{q}}"
             fields:
-              - { label: "Pergunta", name: question, widget: string }
-              - { label: "Resposta", name: answer, widget: text }
+              - { label: "Pergunta", name: q, widget: string }
+              - { label: "Resposta", name: a, widget: text }
