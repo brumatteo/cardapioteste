@@ -1,5 +1,24 @@
 {
   "sectionsOrder": ["hero","about","menu","decorations","custom","policies","faq"],
+
+  "primaryColor": "#58410d",
+  "secondary": "#7a5c4b",
+  "bg": "#f8f6f3",
+  "text": "#5a4b42",
+  "card": "#ffffff",
+  "buttonColor": "#97af7d",
+
+  "primary": "#d9a5a0",
+  "backgroundColor": "#e4e4d3",
+
+  "brandText": "Vanilla Cake Studio",
+
+  "headerCta": {
+    "label": "Pedir no WhatsApp",
+    "href": "https://wa.me/xx?text=Ol%C3%A1%20quero%20fazer%20um%20pedido"
+  },
+
+  "showAbout": true,
   "sectionsEnabled": {
     "hero": true,
     "about": true,
@@ -9,25 +28,5 @@
     "custom": true,
     "policies": true,
     "faq": true
-  },
-
-  "brandText": "Vanilla Cake Studio",
-  "whatsapp": "",
-  "whatsappMessage": "",
-
-  "primaryColor": "#58410d",
-  "secondary": "#7a5c4b",
-  "bg": "#f8f6f3",
-  "text": "#5a4b42",
-  "card": "#ffffff",
-  "buttonColor": "#97af7d",
-  "primary": "#d9a5a0",
-  "backgroundColor": "#e4e4d3",
-
-  "headerCta": {
-    "label": "Pedir no WhatsApp",
-    "href": "https://wa.me/xx?text=Ol%C3%A1%20quero%20fazer%20um%20pedido"
-  },
-
-  "showAbout": true
+  }
 }
