@@ -4,7 +4,7 @@
  * conteúdo seja editável via CMS, sem necessidade de tocar neste código.
  */
 
-// Função utilitária para carregar arquivos JSON do diretório /content
+// -------- util --------
 async function loadJSON(name) {
   try {
     const response = await fetch(`content/${name}.json`);
@@ -19,7 +19,6 @@ async function loadJSON(name) {
   }
 }
 
-// Debounce simples para a busca
 function debounce(func, delay) {
   let timer;
   return function (...args) {
@@ -28,17 +27,17 @@ function debounce(func, delay) {
   };
 }
 
-// Aplica as cores e textos definidos no tema (compatível com primaryColor/buttonColor)
+// -------- tema (apenas seta variáveis; não força estilos) --------
 function applyTheme(theme) {
   const root = document.documentElement;
   const setVar = (cssVar, val) => { if (val) root.style.setProperty(cssVar, val); };
 
-  setVar('--primary', theme.primaryColor || theme.primary);
+  setVar('--primary',  theme.primaryColor || theme.primary);
   setVar('--secondary', theme.secondary || theme.secondaryColor);
-  setVar('--bg', theme.bg || theme.backgroundColor);
-  setVar('--card', theme.card);
-  setVar('--text', theme.text || theme.textColor);
-  setVar('--button', theme.buttonColor);
+  setVar('--bg',        theme.bg || theme.backgroundColor);
+  setVar('--card',      theme.card);
+  setVar('--text',      theme.text || theme.textColor);
+  setVar('--color-button', theme.buttonColor); // compatível com CSS que usa --color-button
 
   const brand = document.getElementById('brandText');
   const cta = document.getElementById('headerCta');
@@ -49,13 +48,12 @@ function applyTheme(theme) {
   }
 }
 
-// Constrói a seção Hero
+// -------- HERO --------
 function buildHero(data) {
   const section = document.createElement('section');
   section.className = 'hero';
   section.id = 'hero';
 
-  // Imagem de fundo
   if (data && data.image) {
     const img = document.createElement('img');
     img.src = data.image;
@@ -64,7 +62,6 @@ function buildHero(data) {
     section.appendChild(img);
   }
 
-  // Overlay
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
   overlay.style.background = (data && data.overlay) || 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2))';
@@ -95,7 +92,7 @@ function buildHero(data) {
   return section;
 }
 
-// Constrói a seção Sobre
+// -------- SOBRE --------
 function buildAbout(data) {
   if (!data) return null;
   const section = document.createElement('section');
@@ -163,7 +160,7 @@ function buildAbout(data) {
   return section;
 }
 
-// Constrói a seção de cardápio (com filtros por categoria usando {id, name})
+// -------- MENU (categorias por {id,name}) --------
 function buildMenu(categories, products) {
   const section = document.createElement('section');
   section.className = 'menu-section';
@@ -179,7 +176,7 @@ function buildMenu(categories, products) {
   subtitle.textContent = 'Defina o sabor e o tamanho';
   section.appendChild(subtitle);
 
-  // Seletor de tamanho (P, M, G)
+  // Tamanhos
   const sizeSelector = document.createElement('div');
   sizeSelector.className = 'size-selector';
   const sizeLabel = document.createElement('span');
@@ -195,7 +192,7 @@ function buildMenu(categories, products) {
   });
   section.appendChild(sizeSelector);
 
-  // Barra de busca
+  // Busca
   const searchContainer = document.createElement('div');
   searchContainer.className = 'search-container';
   const searchInput = document.createElement('input');
@@ -214,10 +211,10 @@ function buildMenu(categories, products) {
   const allBtn = document.createElement('button');
   allBtn.className = 'category-button active';
   allBtn.textContent = 'Todos';
-  allBtn.dataset.category = '';               // vazio = todos
+  allBtn.dataset.category = ''; // vazio = todos
   filterContainer.appendChild(allBtn);
 
-  // Normaliza categorias em [{id, name}]
+  // Normaliza categorias em [{id,name}]
   const catList = (categories && Array.isArray(categories.items))
     ? categories.items.map(c => (typeof c === 'string'
         ? { id: c.toLowerCase().replace(/\s+/g, '-'), name: c }
@@ -227,14 +224,14 @@ function buildMenu(categories, products) {
   catList.forEach((cat) => {
     const btn = document.createElement('button');
     btn.className = 'category-button';
-    btn.textContent = cat.name;               // mostra o nome
-    btn.dataset.category = cat.id;            // filtra pelo id
+    btn.textContent = cat.name;   // mostra nome
+    btn.dataset.category = cat.id; // filtra por id
     filterContainer.appendChild(btn);
   });
 
   section.appendChild(filterContainer);
 
-  // Bloco de info da categoria (mantido mas oculto por padrão)
+  // Info da categoria (escondido por padrão)
   const infoContainer = document.createElement('div');
   infoContainer.className = 'category-info';
   const descPara = document.createElement('p');
@@ -251,7 +248,7 @@ function buildMenu(categories, products) {
   grid.className = 'product-grid';
   section.appendChild(grid);
 
-  // Render de produtos conforme filtros
+  // Render
   const renderProducts = (catFilter, searchTerm) => {
     grid.innerHTML = '';
     descPara.textContent = '';
@@ -264,7 +261,7 @@ function buildMenu(categories, products) {
     const filtered = (products.items || []).filter((item) => {
       if (!item.active) return false;
       const prodCat = (item.category || '').toString().toLowerCase();
-      const matchesCategory = !selected || prodCat === selected; // vazio = todos
+      const matchesCategory = !selected || prodCat === selected; // '' = todos
       const textToSearch = `${item.name} ${item.description} ${item.tags ? item.tags.join(' ') : ''}`.toLowerCase();
       const matchesSearch = !term || textToSearch.includes(term);
       return matchesCategory && matchesSearch;
@@ -282,6 +279,7 @@ function buildMenu(categories, products) {
       const card = document.createElement('div');
       card.className = 'product-card';
 
+      // Imagem
       const imgWrap = document.createElement('div');
       imgWrap.className = 'product-image';
       if (product.image) {
@@ -300,6 +298,7 @@ function buildMenu(categories, products) {
       }
       card.appendChild(imgWrap);
 
+      // Info
       const info = document.createElement('div');
       info.className = 'product-info';
       const nameEl = document.createElement('h3');
@@ -339,6 +338,7 @@ function buildMenu(categories, products) {
       info.appendChild(priceEl);
       info.appendChild(servesEl);
 
+      // Tags
       const tagsEl = document.createElement('div');
       tagsEl.className = 'product-tags';
       if (product.tags && product.tags.length) {
@@ -351,6 +351,7 @@ function buildMenu(categories, products) {
       }
       info.appendChild(tagsEl);
 
+      // CTA
       if (product.cta) {
         const ctaEl = document.createElement('a');
         ctaEl.className = 'product-cta';
@@ -360,6 +361,7 @@ function buildMenu(categories, products) {
         info.appendChild(ctaEl);
       }
 
+      // Badges
       if (product.bestseller) {
         const badge = document.createElement('div');
         badge.className = 'product-badge';
@@ -377,7 +379,7 @@ function buildMenu(categories, products) {
     });
   };
 
-  // Estado atual
+  // Estado
   let currentCategory = ''; // '' = Todos
   let currentSearch = '';
   let currentSize = 'P';
@@ -416,7 +418,7 @@ function buildMenu(categories, products) {
   return section;
 }
 
-// Constrói a galeria
+// -------- GALERIA --------
 function buildGallery(data) {
   if (!data || !data.items || data.items.length === 0) return null;
   const section = document.createElement('section');
@@ -440,7 +442,7 @@ function buildGallery(data) {
   return section;
 }
 
-// Constrói a seção de decorações (escolha sua decoração)
+// -------- DECORAÇÕES --------
 function buildDecorations(data) {
   if (!data || !data.items || data.items.length === 0) return null;
 
@@ -489,7 +491,7 @@ function buildDecorations(data) {
   return section;
 }
 
-// Constrói o bloco sob medida
+// -------- PERSONALIZADO --------
 function buildCustom(data) {
   if (!data) return null;
   const section = document.createElement('section');
@@ -518,7 +520,7 @@ function buildCustom(data) {
   return section;
 }
 
-// Constrói a seção de políticas/informações
+// -------- POLÍTICAS --------
 function buildPolicies(data) {
   if (!data || !data.items || !data.items.length) return null;
   const section = document.createElement('section');
@@ -565,7 +567,7 @@ function buildPolicies(data) {
   return section;
 }
 
-// Constrói a seção FAQ
+// -------- FAQ --------
 function buildFAQ(data) {
   if (!data || !data.items || !data.items.length) return null;
   const section = document.createElement('section');
@@ -599,7 +601,7 @@ function buildFAQ(data) {
   return section;
 }
 
-// Inicialização: carrega o conteúdo e monta as seções
+// -------- init --------
 async function initSite() {
   const theme = await loadJSON('theme');
   if (theme) applyTheme(theme);
@@ -616,7 +618,6 @@ async function initSite() {
 
   const main = document.getElementById('main');
 
-  // Ordem de seções (inclui 'decorations' no default)
   const order = (theme && theme.sectionsOrder) || ['hero','about','menu','decorations','gallery','custom','policies','faq'];
   const enabled = (theme && theme.sectionsEnabled) || {};
 
@@ -645,5 +646,5 @@ async function initSite() {
   }
 }
 
-// Executa após carregar o DOM
 document.addEventListener('DOMContentLoaded', initSite);
+
