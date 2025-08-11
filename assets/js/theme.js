@@ -1,46 +1,44 @@
-// assets/js/theme.js
-(async function () {
+// Lê /content/theme.json e aplica no site (cores, marca e CTA do topo)
+(async () => {
   try {
-    const res = await fetch('/content/theme.json', { cache: 'no-store' });
-    const t = await res.json();
+    const res  = await fetch('/content/theme.json', { cache: 'no-store' });
+    const t    = await res.json();
+    const root = document.documentElement;
 
-    // valores (com fallback ao que você já definiu no theme.json)
-    const btn   = t.buttonColor || '#97af7d';
-    const prim  = t.primaryColor || '#58410d';
-    const sec   = t.secondary || '#7a5c4b';
-    const bg    = t.bg || '#f8f6f3';
-    const text  = t.text || '#5a4b42';
-    const card  = t.card || '#ffffff';
+    const set = (name, val) => { if (val) root.style.setProperty(name, val); };
 
-    // injeta CSS na página
-    const css = `
-      :root{
-        --btn-color:${btn};
-        --primary-color:${prim};
-        --secondary-color:${sec};
-        --bg-color:${bg};
-        --text-color:${text};
-        --card-bg:${card};
-      }
-      body{ background: var(--bg-color) !important; color: var(--text-color) !important; }
-      a{ color: var(--primary-color) !important; }
-      .btn, .button, button,
-      .products .product .cta button,
-      .products .product .cta .btn{
-        background: var(--btn-color) !important;
-        border-color: var(--btn-color) !important;
-        color: #fff !important;
-      }
-      .card, .product, .policy, .faq-item, .about-card{
-        background: var(--card-bg) !important;
-      }
-      h1,h2,h3,h4,h5,h6,.link, .nav a{ color: var(--primary-color) !important; }
-    `;
-    const styleTag = document.createElement('style');
-    styleTag.setAttribute('data-theme', 'injected');
-    styleTag.textContent = css;
-    document.head.appendChild(styleTag);
+    // Variáveis (se usar CSS variables)
+    set('--color-primary',  t.primaryColor || t.primary);
+    set('--color-secondary',t.secondary);
+    set('--color-bg',       t.bg || t.backgroundColor);
+    set('--color-text',     t.text);
+    set('--color-card',     t.card);
+    set('--color-button',   t.buttonColor);
+
+    // Aplicação direta (funciona mesmo sem CSS variables)
+    if (t.bg || t.backgroundColor) document.body.style.backgroundColor = t.bg || t.backgroundColor;
+    if (t.text) document.body.style.color = t.text;
+
+    // Botões comuns
+    document.querySelectorAll('.btn, .button, .hero-cta, .product-cta, .custom-cta').forEach(el => {
+      if (t.buttonColor) el.style.backgroundColor = t.buttonColor;
+    });
+
+    // Marca (texto)
+    const brandEl =
+      document.getElementById('brandText') ||
+      document.querySelector('#brandText, .brand-text, .brandText');
+    if (brandEl && t.brandText) brandEl.textContent = t.brandText;
+
+    // Botão do topo (CTA)
+    const headerCta =
+      document.getElementById('headerCta') ||
+      document.querySelector('#headerCta, .header-cta, .headerCta, nav a#headerCta');
+    if (headerCta && t.headerCta) {
+      if (t.headerCta.label) headerCta.textContent = t.headerCta.label;
+      if (t.headerCta.href)  headerCta.setAttribute('href', t.headerCta.href);
+    }
   } catch (e) {
-    console.error('Tema: falhou ao carregar', e);
+    console.error('Falha ao carregar tema:', e);
   }
 })();
