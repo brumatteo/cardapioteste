@@ -177,7 +177,7 @@ collections:
               - { label: "Ativo",        name: active,      widget: boolean, default: true, required: false, hint: "Desligue para esconder o produto sem apagar." }
               - { label: "Nome",         name: name,        widget: string }
               - { label: "Descrição",    name: description, widget: text, required: false }
-              - { label: "Categoria (ID)", name: category,  widget: string, hint: "Use um ID de categoria (ex.: especiais, tradicionais)" }
+              - { label: "Categoria (ID)", name: category, widget: select, required: false, options: ["", "especiais", "tradicionais"], hint: "Selecione a categoria ou deixe em branco" }
               - { label: "Preço",        name: price,       widget: string, required: false, hint: "Ex.: R$ 90" }
               - { label: "Imagem",       name: image,       widget: image,  required: false, hint: "Foto do produto." }
               - label: "Tamanhos (opcional)"
