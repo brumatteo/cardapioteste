@@ -1,6 +1,15 @@
-{
-  "items": [
-    { "id": "especiais",   "name": "Especiais" },
-    { "id": "tradicionais","name": "Tradicionais" }
-  ]
-}
+// Botão "Todos"
+const allChip = document.createElement('button');
+allChip.className = 'chip';
+allChip.textContent = 'Todos';
+allChip.dataset.category = ''; // vazio = todos
+chipsWrap.appendChild(allChip);
+
+// Demais categorias do JSON
+categories.items.forEach(cat => {
+  const chip = document.createElement('button');
+  chip.className = 'chip';
+  chip.textContent = cat.name;     // Mostra o nome
+  chip.dataset.category = cat.id;  // Guarda o ID
+  chipsWrap.appendChild(chip);
+});
