@@ -2,19 +2,19 @@
   "items": [
     {
       "q": "Com quanto tempo de antecedência devo fazer meu pedido?",
-      "a": "O ideal é que o pedido seja feito com no mínimo 5 dias de antecedência para garantir disponibilidade."
+      "a": "O ideal é com pelo menos 5 dias de antecedência."
     },
     {
       "q": "Posso personalizar meu bolo?",
-      "a": "Sim! Você pode enviar referências e ideias, e criamos um bolo exclusivo para você."
+      "a": "Sim! Envie referências e criamos algo exclusivo para você."
     },
     {
       "q": "Quais formas de pagamento são aceitas?",
-      "a": "Aceitamos pix e dinheiro. Pagamento em duas partes: 50% no pedido e 50% na retirada."
+      "a": "Pix e dinheiro."
     },
     {
       "q": "Vocês entregam?",
-      "a": "Fazemos entregas com taxa adicional dentro da região, mediante disponibilidade."
+      "a": "Entregas sob disponibilidade com taxa adicional."
     }
   ]
 }
