@@ -24,7 +24,7 @@
     "about": true,
     "menu": true,
     "decorations": true,
-    "gallery": true,
+    "gallery": false,
     "custom": true,
     "policies": true,
     "faq": true
