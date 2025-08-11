@@ -21,53 +21,47 @@ collections:
         label: "Configurações do Tema"
         format: json
         fields:
+          # CORES (campos no RAIZ do theme.json, sem objeto aninhado)
+          - { label: "Cor dos botões (CTA)",            name: buttonColor,    widget: color, allowInput: true, default: "#97af7d",  hint: "Usada nos botões como 'Fazer pedido'." }
+          - { label: "Cor dos títulos/links (destaque)", name: primaryColor,   widget: color, allowInput: true, default: "#58410d",  hint: "Títulos, links e elementos de destaque." }
+          - { label: "Cor de detalhes menores (opc.)",   name: secondary,      widget: color, allowInput: true, default: "#7a5c4b",  required: false }
+          - { label: "Fundo geral do site",              name: bg,             widget: color, allowInput: true, default: "#f8f6f3" }
+          - { label: "Cor do texto principal",           name: text,           widget: color, allowInput: true, default: "#5a4b42" }
+          - { label: "Fundo das caixinhas (cards)",      name: card,           widget: color, allowInput: true, default: "#ffffff" }
+          # Mantidos por compatibilidade (opc.)
+          - { label: "Cor primária (backup, opc.)",      name: primary,        widget: color, allowInput: true, default: "#d9a5a0",  required: false }
+          - { label: "Cor de fundo alternativa (opc.)",  name: backgroundColor,widget: color, allowInput: true, default: "#e4e4d3",  required: false }
 
-          # -------- CORES --------
-          - label: "Cores do site"
-            name: cores
-            widget: object
-            hint: "Ajuste as cores principais do site. Todas podem ser alteradas depois."
-            fields:
-              - { label: "Cor dos botões (CTA)", name: buttonColor, widget: color, allowInput: true, default: "#97af7d", hint: "Usada nos botões como 'Fazer pedido'." }
-              - { label: "Cor dos títulos e links (destaque)", name: primaryColor, widget: color, allowInput: true, default: "#58410d", hint: "Títulos, links e elementos de destaque." }
-              - { label: "Cor de detalhes menores (opcional)", name: secondary, widget: color, allowInput: true, required: false, default: "#7a5c4b", hint: "Ícones, bordas e pequenos detalhes." }
-              - { label: "Fundo geral do site", name: bg, widget: color, allowInput: true, default: "#f8f6f3", hint: "Plano de fundo das páginas." }
-              - { label: "Cor do texto principal", name: text, widget: color, allowInput: true, default: "#5a4b42", hint: "Parágrafos e descrições." }
-              - { label: "Fundo das caixinhas (cards)", name: card, widget: color, allowInput: true, default: "#ffffff", hint: "Blocos de produto, políticas e outras caixas." }
-              # Estes dois existem no seu theme.json; deixe como estão (opcionais)
-              - { label: "Cor primária (backup, opcional)", name: primary, widget: color, allowInput: true, required: false, default: "#d9a5a0", hint: "Não obrigatório; mantido por compatibilidade." }
-              - { label: "Cor de fundo alternativa (opcional)", name: backgroundColor, widget: color, allowInput: true, required: false, default: "#e4e4d3", hint: "Não obrigatório; mantido por compatibilidade." }
-
-          # -------- BOTÃO DO TOPO --------
+          # BOTÃO DO TOPO
           - label: "Botão do topo (Header)"
             name: headerCta
             widget: object
             collapsed: true
             fields:
-              - { label: "Texto do botão", name: label, widget: string, required: false, hint: "Ex.: 'Pedir no WhatsApp'." }
-              - { label: "Link do botão",  name: href,  widget: string, required: false, hint: "Ex.: https://wa.me/SEUNUMERO?text=mensagem" }
+              - { label: "Texto do botão", name: label, widget: string, required: false, default: "Pedir no WhatsApp" }
+              - { label: "Link do botão",  name: href,  widget: string, required: false, default: "https://wa.me/xx?text=Ol%C3%A1%20quero%20fazer%20um%20pedido" }
 
-          # -------- MARCA / WHATSAPP --------
-          - { label: "Marca (texto no topo)", name: brandText, widget: string, required: false, hint: "Nome exibido na barra superior." }
-          - { label: "WhatsApp (com DDI)",    name: whatsapp,  widget: string, required: false, hint: "Ex.: +55 11 91234-5678" }
-          - { label: "Mensagem padrão do WhatsApp", name: whatsappMessage, widget: text, required: false, hint: "Texto que vai junto no link do WhatsApp." }
+          # MARCA / WHATSAPP (opcionais, ficam em branco para cada aluna preencher)
+          - { label: "Marca (texto no topo)", name: brandText,       widget: string, required: false, default: "Vanilla Cake Studio" }
+          - { label: "WhatsApp (com DDI)",    name: whatsapp,        widget: string, required: false, hint: "Ex.: +55 11 91234-5678" }
+          - { label: "Mensagem padrão WhatsApp", name: whatsappMessage, widget: text, required: false, hint: "Texto que vai junto no link." }
 
-          # -------- SEÇÕES DO SITE --------
-          - { label: "Mostrar a seção 'Sobre'", name: showAbout, widget: boolean, default: true, required: false, hint: "Desligue para esconder a seção 'Sobre'." }
+          # LIGA/DESLIGA SEÇÕES
+          - { label: "Mostrar a seção 'Sobre'", name: showAbout, widget: boolean, default: true, required: false }
           - label: "Seções visíveis"
             name: sectionsEnabled
             widget: object
-            hint: "Ative/desative as seções do site."
             fields:
-              - { label: "Banner (Hero)",  name: hero,         widget: boolean, default: true }
-              - { label: "Sobre",          name: about,        widget: boolean, default: true }
-              - { label: "Cardápio",       name: menu,         widget: boolean, default: true }
-              - { label: "Decorações",     name: decorations,  widget: boolean, default: true }
-              - { label: "Galeria (opcional)", name: gallery,  widget: boolean, default: false }
-              - { label: "Personalizado",  name: custom,       widget: boolean, default: true }
-              - { label: "Informações",    name: policies,     widget: boolean, default: true }
-              - { label: "FAQ",            name: faq,          widget: boolean, default: true }
+              - { label: "Banner (Hero)",     name: hero,         widget: boolean, default: true }
+              - { label: "Sobre",             name: about,        widget: boolean, default: true }
+              - { label: "Cardápio",          name: menu,         widget: boolean, default: true }
+              - { label: "Decorações",        name: decorations,  widget: boolean, default: true }
+              - { label: "Galeria (opcional)",name: gallery,      widget: boolean, default: false }
+              - { label: "Personalizado",     name: custom,       widget: boolean, default: true }
+              - { label: "Informações",       name: policies,     widget: boolean, default: true }
+              - { label: "FAQ",               name: faq,          widget: boolean, default: true }
 
+          # ORDEM DAS SEÇÕES (com rótulos legíveis)
           - label: "Ordem das seções (arraste para reordenar)"
             name: sectionsOrder
             widget: list
@@ -89,7 +83,6 @@ collections:
 
   # =======================
   # BANNER (HERO)
-  # Arquivo: content/hero.json
   # =======================
   - name: hero
     label: "Banner (Hero)"
@@ -109,12 +102,11 @@ collections:
             widget: object
             collapsed: true
             fields:
-              - { label: "Texto", name: label, widget: string, required: false, hint: "Ex.: Ver Cardápio" }
-              - { label: "Link",  name: href,  widget: string, required: false, hint: "Ex.: #menu" }
+              - { label: "Texto", name: label, widget: string, required: false, default: "Ver Cardápio" }
+              - { label: "Link",  name: href,  widget: string, required: false, default: "#menu" }
 
   # =======================
   # SOBRE
-  # Arquivo: content/about.json
   # =======================
   - name: about
     label: "Sobre"
@@ -139,7 +131,6 @@ collections:
 
   # =======================
   # CATEGORIAS
-  # Arquivo: content/categories.json  (formato: {id, name})
   # =======================
   - name: categories
     label: "Categorias do Cardápio"
@@ -158,7 +149,6 @@ collections:
 
   # =======================
   # PRODUTOS
-  # Arquivo: content/products.json
   # =======================
   - name: products
     label: "Produtos"
@@ -177,7 +167,7 @@ collections:
               - { label: "Ativo",        name: active,      widget: boolean, default: true, required: false, hint: "Desligue para esconder o produto sem apagar." }
               - { label: "Nome",         name: name,        widget: string }
               - { label: "Descrição",    name: description, widget: text, required: false }
-              - { label: "Categoria (ID)", name: category, widget: select, required: false, options: ["", "especiais", "tradicionais"], hint: "Selecione a categoria ou deixe em branco" }
+              - { label: "Categoria",    name: category,    widget: select, required: false, options: ["", "especiais", "tradicionais"], hint: "Selecione a categoria ou deixe em branco." }
               - { label: "Preço",        name: price,       widget: string, required: false, hint: "Ex.: R$ 90" }
               - { label: "Imagem",       name: image,       widget: image,  required: false, hint: "Foto do produto." }
               - label: "Tamanhos (opcional)"
@@ -192,7 +182,6 @@ collections:
 
   # =======================
   # DECORAÇÕES
-  # Arquivo: content/decorations.json
   # =======================
   - name: decorations
     label: "Decorações"
@@ -214,7 +203,6 @@ collections:
 
   # =======================
   # GALERIA (opcional)
-  # Arquivo: content/gallery.json
   # =======================
   - name: gallery
     label: "Galeria (opcional)"
@@ -233,7 +221,6 @@ collections:
 
   # =======================
   # INFORMAÇÕES / POLÍTICAS
-  # Arquivo: content/policies.json  (introTitle, introText, items[] com {title, items[]})
   # =======================
   - name: policies
     label: "Informações / Políticas"
@@ -261,7 +248,6 @@ collections:
 
   # =======================
   # FAQ
-  # Arquivo: content/faq.json  (items[] com q/a)
   # =======================
   - name: faq
     label: "FAQ"
