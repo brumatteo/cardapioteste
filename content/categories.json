@@ -1,6 +1,6 @@
 {
   "items": [
-    { "id": "especiais", "name": "Especiais" },
-    { "id": "tradicionais", "name": "Tradicionais" }
+    { "id": "especiais",   "name": "Especiais" },
+    { "id": "tradicionais","name": "Tradicionais" }
   ]
 }
