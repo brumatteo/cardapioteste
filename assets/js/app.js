@@ -8,11 +8,9 @@
 async function loadJSON(name) {
   try {
     const response = await fetch(`content/${name}.json`);
-    // In many browsers, fetch() fails on the file protocol. If that happens, we'll fall back below.
     if (!response.ok) throw new Error(`Não foi possível carregar ${name}`);
     return await response.json();
   } catch (e) {
-    // Log the error once but gracefully degrade to default content if available
     console.warn(`Falha ao carregar ${name}.json, usando dados padrão se disponíveis.`);
     if (window.defaultContent && window.defaultContent[name]) {
       return window.defaultContent[name];
@@ -26,20 +24,22 @@ function debounce(func, delay) {
   let timer;
   return function (...args) {
     clearTimeout(timer);
-    timer = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
+    timer = setTimeout(() => func.apply(this, args), delay);
   };
 }
 
-// Aplica as cores e textos definidos no tema
+// Aplica as cores e textos definidos no tema (compatível com primaryColor/buttonColor)
 function applyTheme(theme) {
   const root = document.documentElement;
-  if (theme.primary) root.style.setProperty('--primary', theme.primary);
-  if (theme.secondary) root.style.setProperty('--secondary', theme.secondary);
-  if (theme.bg) root.style.setProperty('--bg', theme.bg);
-  if (theme.card) root.style.setProperty('--card', theme.card);
-  if (theme.text) root.style.setProperty('--text', theme.text);
+  const setVar = (cssVar, val) => { if (val) root.style.setProperty(cssVar, val); };
+
+  setVar('--primary', theme.primaryColor || theme.primary);
+  setVar('--secondary', theme.secondary || theme.secondaryColor);
+  setVar('--bg', theme.bg || theme.backgroundColor);
+  setVar('--card', theme.card);
+  setVar('--text', theme.text || theme.textColor);
+  setVar('--button', theme.buttonColor);
+
   const brand = document.getElementById('brandText');
   const cta = document.getElementById('headerCta');
   if (brand && theme.brandText) brand.textContent = theme.brandText;
@@ -56,33 +56,33 @@ function buildHero(data) {
   section.id = 'hero';
 
   // Imagem de fundo
-  if (data.image) {
+  if (data && data.image) {
     const img = document.createElement('img');
     img.src = data.image;
-    img.alt = data.title || '';
+    img.alt = (data && data.title) || '';
     img.loading = 'lazy';
     section.appendChild(img);
   }
+
   // Overlay
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
-  // Define gradiente e opacidade conforme JSON
-  overlay.style.background = data.overlay || 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2))';
-  overlay.style.opacity = data.opacity != null ? data.opacity : 0.5;
+  overlay.style.background = (data && data.overlay) || 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2))';
+  overlay.style.opacity = (data && data.opacity != null) ? data.opacity : 0.5;
   section.appendChild(overlay);
 
   const container = document.createElement('div');
   container.className = 'hero-content';
   const title = document.createElement('h1');
   title.className = 'hero-title';
-  title.textContent = data.title || '';
+  title.textContent = (data && data.title) || '';
   const subtitle = document.createElement('p');
   subtitle.className = 'hero-subtitle';
-  subtitle.textContent = data.subtitle || '';
+  subtitle.textContent = (data && data.subtitle) || '';
   container.appendChild(title);
   container.appendChild(subtitle);
-  // CTA
-  if (data.cta) {
+
+  if (data && data.cta) {
     const cta = document.createElement('a');
     cta.className = 'hero-cta';
     cta.textContent = data.cta.label || '';
@@ -90,19 +90,21 @@ function buildHero(data) {
     cta.setAttribute('aria-label', data.cta.label || 'Chamada para ação');
     container.appendChild(cta);
   }
+
   section.appendChild(container);
   return section;
 }
 
 // Constrói a seção Sobre
 function buildAbout(data) {
+  if (!data) return null;
   const section = document.createElement('section');
   section.className = 'about';
   section.id = 'about';
-  // Grid com texto e imagem
+
   const grid = document.createElement('div');
   grid.className = 'about-grid';
-  // Texto
+
   const textWrapper = document.createElement('div');
   textWrapper.className = 'about-text-wrapper';
   const title = document.createElement('h2');
@@ -113,7 +115,7 @@ function buildAbout(data) {
   text.textContent = data.text || '';
   textWrapper.appendChild(title);
   textWrapper.appendChild(text);
-  // Imagem
+
   let imageEl = null;
   if (data.image) {
     const img = document.createElement('img');
@@ -123,18 +125,18 @@ function buildAbout(data) {
     img.loading = 'lazy';
     imageEl = img;
   }
-  // Adiciona elementos ao grid
+
   grid.appendChild(textWrapper);
   if (imageEl) grid.appendChild(imageEl);
   section.appendChild(grid);
-  // Lista de features/icon separada abaixo do grid
+
   if (data.features && Array.isArray(data.features) && data.features.length) {
     const featuresWrapper = document.createElement('div');
     featuresWrapper.className = 'features-row';
     data.features.forEach((item) => {
       const itemEl = document.createElement('div');
       itemEl.className = 'feature-item';
-      // Ícone: imagem ou texto
+
       if (item.icon && (item.icon.includes('/') || item.icon.includes('.'))) {
         const imgIcon = document.createElement('img');
         imgIcon.src = item.icon;
@@ -147,6 +149,7 @@ function buildAbout(data) {
         spanIcon.className = 'icon-text';
         itemEl.appendChild(spanIcon);
       }
+
       const ftTitle = document.createElement('h3');
       ftTitle.textContent = item.title || '';
       const ftText = document.createElement('p');
@@ -160,20 +163,22 @@ function buildAbout(data) {
   return section;
 }
 
-// Constrói a seção de cardápio
+// Constrói a seção de cardápio (com filtros por categoria usando {id, name})
 function buildMenu(categories, products) {
   const section = document.createElement('section');
   section.className = 'menu-section';
   section.id = 'menu';
+
   const title = document.createElement('h2');
   title.className = 'menu-title';
   title.textContent = 'Escolha Seu Bolo Ideal';
   section.appendChild(title);
-  // Subtítulo explicativo de como escolher o bolo (sabor/tamanho)
+
   const subtitle = document.createElement('p');
   subtitle.className = 'menu-subtitle';
   subtitle.textContent = 'Defina o sabor e o tamanho';
   section.appendChild(subtitle);
+
   // Seletor de tamanho (P, M, G)
   const sizeSelector = document.createElement('div');
   sizeSelector.className = 'size-selector';
@@ -181,8 +186,7 @@ function buildMenu(categories, products) {
   sizeLabel.textContent = 'Tamanho:';
   sizeLabel.className = 'size-label';
   sizeSelector.appendChild(sizeLabel);
-  const sizes = ['P', 'M', 'G'];
-  sizes.forEach((sz) => {
+  ['P', 'M', 'G'].forEach((sz) => {
     const btn = document.createElement('button');
     btn.className = 'size-button';
     btn.textContent = sz;
@@ -190,6 +194,7 @@ function buildMenu(categories, products) {
     sizeSelector.appendChild(btn);
   });
   section.appendChild(sizeSelector);
+
   // Barra de busca
   const searchContainer = document.createElement('div');
   searchContainer.className = 'search-container';
@@ -200,59 +205,71 @@ function buildMenu(categories, products) {
   searchInput.setAttribute('aria-label', 'Buscar produto');
   searchContainer.appendChild(searchInput);
   section.appendChild(searchContainer);
+
   // Filtros de categoria
   const filterContainer = document.createElement('div');
   filterContainer.className = 'category-filters';
-  // Botão para todos
+
+  // Botão "Todos"
   const allBtn = document.createElement('button');
   allBtn.className = 'category-button active';
   allBtn.textContent = 'Todos';
-  allBtn.dataset.category = 'Todos';
+  allBtn.dataset.category = '';               // vazio = todos
   filterContainer.appendChild(allBtn);
-  if (categories && Array.isArray(categories.items)) {
-    categories.items.forEach((cat) => {
-      const btn = document.createElement('button');
-      btn.className = 'category-button';
-      btn.textContent = cat;
-      btn.dataset.category = cat;
-      filterContainer.appendChild(btn);
-    });
-  }
-  section.appendChild(filterContainer);
-  // Informação da categoria (descrição) - esconder inicialmente; preços não são mais exibidos aqui
 
-  // Informações da categoria (descrição e tabela de tamanhos)
+  // Normaliza categorias em [{id, name}]
+  const catList = (categories && Array.isArray(categories.items))
+    ? categories.items.map(c => (typeof c === 'string'
+        ? { id: c.toLowerCase().replace(/\s+/g, '-'), name: c }
+        : c))
+    : [];
+
+  catList.forEach((cat) => {
+    const btn = document.createElement('button');
+    btn.className = 'category-button';
+    btn.textContent = cat.name;               // mostra o nome
+    btn.dataset.category = cat.id;            // filtra pelo id
+    filterContainer.appendChild(btn);
+  });
+
+  section.appendChild(filterContainer);
+
+  // Bloco de info da categoria (mantido mas oculto por padrão)
   const infoContainer = document.createElement('div');
   infoContainer.className = 'category-info';
-  // Descrição da categoria
   const descPara = document.createElement('p');
   descPara.className = 'category-description';
-  infoContainer.appendChild(descPara);
-  // Tabela de tamanhos
   const sizesWrapper = document.createElement('div');
   sizesWrapper.className = 'category-sizes';
+  infoContainer.appendChild(descPara);
   infoContainer.appendChild(sizesWrapper);
+  infoContainer.style.display = 'none';
   section.appendChild(infoContainer);
+
   // Grid de produtos
   const grid = document.createElement('div');
   grid.className = 'product-grid';
   section.appendChild(grid);
 
-  // Função para renderizar produtos com base em filtros
+  // Render de produtos conforme filtros
   const renderProducts = (catFilter, searchTerm) => {
-    // Limpa grid
     grid.innerHTML = '';
-    // Atualiza info de categoria
-    renderCategoryInfo(catFilter);
-    // Normaliza entrada
+    descPara.textContent = '';
+    sizesWrapper.innerHTML = '';
+    infoContainer.style.display = 'none';
+
+    const selected = (catFilter || '').toString().toLowerCase();
     const term = (searchTerm || '').toLowerCase();
-    const filtered = products.items.filter((item) => {
+
+    const filtered = (products.items || []).filter((item) => {
       if (!item.active) return false;
-      const matchesCategory = catFilter === 'Todos' || item.category === catFilter;
+      const prodCat = (item.category || '').toString().toLowerCase();
+      const matchesCategory = !selected || prodCat === selected; // vazio = todos
       const textToSearch = `${item.name} ${item.description} ${item.tags ? item.tags.join(' ') : ''}`.toLowerCase();
-      const matchesSearch = term === '' || textToSearch.includes(term);
+      const matchesSearch = !term || textToSearch.includes(term);
       return matchesCategory && matchesSearch;
     });
+
     if (!filtered.length) {
       const empty = document.createElement('p');
       empty.textContent = 'Nenhum produto encontrado.';
@@ -260,10 +277,11 @@ function buildMenu(categories, products) {
       grid.appendChild(empty);
       return;
     }
+
     filtered.forEach((product) => {
       const card = document.createElement('div');
       card.className = 'product-card';
-      // Imagem
+
       const imgWrap = document.createElement('div');
       imgWrap.className = 'product-image';
       if (product.image) {
@@ -273,7 +291,6 @@ function buildMenu(categories, products) {
         img.loading = 'lazy';
         imgWrap.appendChild(img);
       } else {
-        // Placeholder simples
         imgWrap.style.background = '#f4f2ef';
         const span = document.createElement('span');
         span.textContent = product.name.charAt(0);
@@ -282,7 +299,7 @@ function buildMenu(categories, products) {
         imgWrap.appendChild(span);
       }
       card.appendChild(imgWrap);
-      // Conteúdo
+
       const info = document.createElement('div');
       info.className = 'product-info';
       const nameEl = document.createElement('h3');
@@ -290,11 +307,38 @@ function buildMenu(categories, products) {
       nameEl.textContent = product.name;
       const descEl = document.createElement('p');
       descEl.className = 'product-description';
-      descEl.textContent = product.description;
-      // Preço e porções individuais foram removidos do card principal. As três
-      // opções de tamanho (P/M/G) são exibidas abaixo da descrição através de
-      // product.sizeTable.
-      // Tags
+      descEl.textContent = product.description || '';
+      info.appendChild(nameEl);
+      info.appendChild(descEl);
+
+      // Preço/porções conforme tamanho atual
+      const priceEl = document.createElement('div');
+      priceEl.className = 'product-price';
+      const servesEl = document.createElement('div');
+      servesEl.className = 'product-serves';
+
+      let basePrice = product.price || '';
+      let serveInfo = product.serves || '';
+
+      if (product.sizeTable && product.sizeTable.length) {
+        const entry = product.sizeTable.find((entry) => {
+          const sizeLetter = (entry.size || '').split(' ')[0];
+          return sizeLetter === currentSize;
+        });
+        if (entry) {
+          basePrice = entry.price || basePrice;
+          serveInfo = entry.serves || serveInfo;
+        } else {
+          basePrice = product.sizeTable[0].price || basePrice;
+          serveInfo = product.sizeTable[0].serves || serveInfo;
+        }
+      }
+
+      priceEl.textContent = basePrice ? `${basePrice}` : '';
+      servesEl.textContent = serveInfo || '';
+      info.appendChild(priceEl);
+      info.appendChild(servesEl);
+
       const tagsEl = document.createElement('div');
       tagsEl.className = 'product-tags';
       if (product.tags && product.tags.length) {
@@ -305,36 +349,8 @@ function buildMenu(categories, products) {
           tagsEl.appendChild(t);
         });
       }
-      info.appendChild(nameEl);
-      info.appendChild(descEl);
-      // Preço e porções baseados no tamanho selecionado (P/M/G)
-      const priceEl = document.createElement('div');
-      priceEl.className = 'product-price';
-      const servesEl = document.createElement('div');
-      servesEl.className = 'product-serves';
-      let basePrice = product.price || '';
-      let serveInfo = product.serves || '';
-      if (product.sizeTable && product.sizeTable.length) {
-        // Procura entrada que comece com o tamanho atual (ex.: "P" em "P 15cm")
-        const entry = product.sizeTable.find((entry) => {
-          const sizeLetter = (entry.size || '').split(' ')[0];
-          return sizeLetter === currentSize;
-        });
-        if (entry) {
-          basePrice = entry.price || basePrice;
-          serveInfo = entry.serves || serveInfo;
-        } else {
-          // fallback para primeira entrada
-          basePrice = product.sizeTable[0].price || basePrice;
-          serveInfo = product.sizeTable[0].serves || serveInfo;
-        }
-      }
-      priceEl.textContent = basePrice ? `${basePrice}` : '';
-      servesEl.textContent = serveInfo || '';
-      info.appendChild(priceEl);
-      info.appendChild(servesEl);
       info.appendChild(tagsEl);
-      // CTA
+
       if (product.cta) {
         const ctaEl = document.createElement('a');
         ctaEl.className = 'product-cta';
@@ -343,8 +359,7 @@ function buildMenu(categories, products) {
         ctaEl.setAttribute('aria-label', product.cta.label || 'Pedir');
         info.appendChild(ctaEl);
       }
-      card.appendChild(info);
-      // Badges
+
       if (product.bestseller) {
         const badge = document.createElement('div');
         badge.className = 'product-badge';
@@ -356,44 +371,34 @@ function buildMenu(categories, products) {
         badge.textContent = 'Novo';
         card.appendChild(badge);
       }
+
+      card.appendChild(info);
       grid.appendChild(card);
     });
   };
 
-  /**
-   * Renderiza as informações específicas da categoria selecionada (descrição e tamanhos).
-   * Caso nenhuma categoria específica esteja selecionada (Todos), o bloco é escondido.
-   * @param {string} catFilter categoria atual selecionada
-   */
-  function renderCategoryInfo(catFilter) {
-    // Sempre esconde o container de descrição e preços para evitar duplicação
-    descPara.textContent = '';
-    sizesWrapper.innerHTML = '';
-    infoContainer.style.display = 'none';
-    return;
-  }
   // Estado atual
-  let currentCategory = 'Todos';
+  let currentCategory = ''; // '' = Todos
   let currentSearch = '';
-  // Tamanho selecionado (P, M ou G). Default: P
   let currentSize = 'P';
-  // Eventos de filtros
+
+  // Eventos
   filterContainer.addEventListener('click', (e) => {
     if (e.target && e.target.matches('.category-button')) {
       const buttons = filterContainer.querySelectorAll('.category-button');
       buttons.forEach((b) => b.classList.remove('active'));
       e.target.classList.add('active');
-      currentCategory = e.target.dataset.category;
+      currentCategory = e.target.dataset.category || '';
       renderProducts(currentCategory, currentSearch);
     }
   });
-  // Busca com debounce
+
   const onSearch = debounce((e) => {
     currentSearch = e.target.value;
     renderProducts(currentCategory, currentSearch);
   }, 300);
   searchInput.addEventListener('input', onSearch);
-  // Evento para seletor de tamanho
+
   sizeSelector.addEventListener('click', (e) => {
     if (e.target && e.target.matches('.size-button')) {
       const btns = sizeSelector.querySelectorAll('.size-button');
@@ -403,10 +408,10 @@ function buildMenu(categories, products) {
       renderProducts(currentCategory, currentSearch);
     }
   });
-  // Define tamanho padrão como ativo
+
   const defaultSizeBtn = sizeSelector.querySelector('.size-button');
   if (defaultSizeBtn) defaultSizeBtn.classList.add('active');
-  // Render inicial
+
   renderProducts(currentCategory, currentSearch);
   return section;
 }
@@ -416,10 +421,12 @@ function buildGallery(data) {
   if (!data || !data.items || data.items.length === 0) return null;
   const section = document.createElement('section');
   section.id = 'gallery';
+
   const title = document.createElement('h2');
   title.className = 'gallery-title';
   title.textContent = 'Galeria';
   section.appendChild(title);
+
   const grid = document.createElement('div');
   grid.className = 'gallery-grid';
   data.items.forEach((imgPath) => {
@@ -441,13 +448,11 @@ function buildDecorations(data) {
   section.className = 'decorations';
   section.id = 'decorations';
 
-  // Título
   const title = document.createElement('h2');
   title.className = 'decorations-title';
   title.textContent = data.title || '';
   section.appendChild(title);
 
-  // Subtítulo
   if (data.subtitle) {
     const subtitle = document.createElement('p');
     subtitle.className = 'decorations-subtitle';
@@ -455,12 +460,10 @@ function buildDecorations(data) {
     section.appendChild(subtitle);
   }
 
-  // Grid de imagens
   const grid = document.createElement('div');
   grid.className = 'decorations-grid';
 
   data.items.forEach((item) => {
-    // aceita tanto string ("images/x.png") quanto objeto ({ image, caption })
     const path = (typeof item === 'string') ? item : item.image;
     if (!path) return;
 
@@ -492,14 +495,18 @@ function buildCustom(data) {
   const section = document.createElement('section');
   section.className = 'custom';
   section.id = 'custom';
+
   const title = document.createElement('h2');
   title.className = 'custom-title';
   title.textContent = data.title || '';
+
   const text = document.createElement('p');
   text.className = 'custom-text';
   text.textContent = data.text || '';
+
   section.appendChild(title);
   section.appendChild(text);
+
   if (data.cta) {
     const cta = document.createElement('a');
     cta.className = 'custom-cta';
@@ -517,25 +524,29 @@ function buildPolicies(data) {
   const section = document.createElement('section');
   section.className = 'policies';
   section.id = 'policies';
-  // Título e introdução
+
   const title = document.createElement('h2');
   title.className = 'policies-title';
-  // Usa introTitle se existir, senão fallback
   title.textContent = data.introTitle || 'Informações & Políticas';
   section.appendChild(title);
+
   if (data.introText) {
     const intro = document.createElement('p');
     intro.className = 'policies-intro';
     intro.textContent = data.introText;
     section.appendChild(intro);
   }
+
   const grid = document.createElement('div');
   grid.className = 'policies-grid';
+
   data.items.forEach((item) => {
     const card = document.createElement('div');
     card.className = 'policy-card';
+
     const h4 = document.createElement('h4');
     h4.textContent = item.title || '';
+
     const ul = document.createElement('ul');
     if (item.items && item.items.length) {
       item.items.forEach((li) => {
@@ -544,10 +555,12 @@ function buildPolicies(data) {
         ul.appendChild(liEl);
       });
     }
+
     card.appendChild(h4);
     card.appendChild(ul);
     grid.appendChild(card);
   });
+
   section.appendChild(grid);
   return section;
 }
@@ -558,10 +571,12 @@ function buildFAQ(data) {
   const section = document.createElement('section');
   section.className = 'faq';
   section.id = 'faq';
+
   const title = document.createElement('h2');
   title.className = 'faq-title';
   title.textContent = 'Perguntas Frequentes';
   section.appendChild(title);
+
   data.items.forEach((item) => {
     const wrapper = document.createElement('div');
     wrapper.className = 'faq-item';
@@ -573,11 +588,14 @@ function buildFAQ(data) {
     a.textContent = item.a;
     wrapper.appendChild(q);
     wrapper.appendChild(a);
+
     q.addEventListener('click', () => {
       wrapper.classList.toggle('open');
     });
+
     section.appendChild(wrapper);
   });
+
   return section;
 }
 
@@ -585,6 +603,7 @@ function buildFAQ(data) {
 async function initSite() {
   const theme = await loadJSON('theme');
   if (theme) applyTheme(theme);
+
   const hero = await loadJSON('hero');
   const about = await loadJSON('about');
   const categories = await loadJSON('categories');
@@ -594,46 +613,30 @@ async function initSite() {
   const policies = await loadJSON('policies');
   const faq = await loadJSON('faq');
   const decorations = await loadJSON('decorations');
+
   const main = document.getElementById('main');
-  // Define ordem de seções
-  const order = (theme && theme.sectionsOrder) || ['hero','about','menu','gallery','custom','policies','faq'];
+
+  // Ordem de seções (inclui 'decorations' no default)
+  const order = (theme && theme.sectionsOrder) || ['hero','about','menu','decorations','gallery','custom','policies','faq'];
   const enabled = (theme && theme.sectionsEnabled) || {};
+
   order.forEach((sectionName) => {
     if (enabled.hasOwnProperty(sectionName) && !enabled[sectionName]) return;
     let el = null;
     switch (sectionName) {
-      case 'hero':
-        el = buildHero(hero);
-        break;
-      case 'about':
-        el = buildAbout(about);
-        break;
-      case 'menu':
-        el = buildMenu(categories, products);
-        break;
-      case 'decorations':
-        el = buildDecorations(decorations);
-        break;
-      case 'gallery':
-        el = buildGallery(gallery);
-        break;
-      case 'custom':
-        el = buildCustom(custom);
-        break;
-      case 'policies':
-        el = buildPolicies(policies);
-        break;
-      case 'faq':
-        el = buildFAQ(faq);
-        break;
-      default:
-        break;
+      case 'hero':        el = buildHero(hero); break;
+      case 'about':       el = buildAbout(about); break;
+      case 'menu':        el = buildMenu(categories, products); break;
+      case 'decorations': el = buildDecorations(decorations); break;
+      case 'gallery':     el = buildGallery(gallery); break;
+      case 'custom':      el = buildCustom(custom); break;
+      case 'policies':    el = buildPolicies(policies); break;
+      case 'faq':         el = buildFAQ(faq); break;
+      default: break;
     }
-    if (el) {
-      main.appendChild(el);
-    }
+    if (el) main.appendChild(el);
   });
-  // Footer texto
+
   const footerText = document.getElementById('footerText');
   if (footerText) {
     const brand = theme && theme.brandText ? theme.brandText : '';
