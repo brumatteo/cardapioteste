@@ -436,14 +436,17 @@ function buildGallery(data) {
 // Constrói a seção de decorações (escolha sua decoração)
 function buildDecorations(data) {
   if (!data || !data.items || data.items.length === 0) return null;
+
   const section = document.createElement('section');
   section.className = 'decorations';
   section.id = 'decorations';
+
   // Título
   const title = document.createElement('h2');
   title.className = 'decorations-title';
   title.textContent = data.title || '';
   section.appendChild(title);
+
   // Subtítulo
   if (data.subtitle) {
     const subtitle = document.createElement('p');
@@ -451,16 +454,34 @@ function buildDecorations(data) {
     subtitle.textContent = data.subtitle;
     section.appendChild(subtitle);
   }
+
   // Grid de imagens
   const grid = document.createElement('div');
   grid.className = 'decorations-grid';
-  data.items.forEach((imgPath) => {
+
+  data.items.forEach((item) => {
+    // aceita tanto string ("images/x.png") quanto objeto ({ image, caption })
+    const path = (typeof item === 'string') ? item : item.image;
+    if (!path) return;
+
+    const fig = document.createElement('figure');
+    fig.className = 'decorations-item';
+
     const img = document.createElement('img');
-    img.src = imgPath;
-    img.alt = 'Decoração de bolo';
+    img.src = path;
+    img.alt = (typeof item === 'object' && item.caption) ? item.caption : 'Decoração de bolo';
     img.loading = 'lazy';
-    grid.appendChild(img);
+    fig.appendChild(img);
+
+    if (typeof item === 'object' && item.caption) {
+      const cap = document.createElement('figcaption');
+      cap.textContent = item.caption;
+      fig.appendChild(cap);
+    }
+
+    grid.appendChild(fig);
   });
+
   section.appendChild(grid);
   return section;
 }
