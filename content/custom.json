@@ -4,5 +4,6 @@
   "cta": {
     "label": "Fazer Pedido",
     "href": "https://wa.me/xx?text=Ol%C3%A1%2C%20quero%20fazer%20um%20pedido"
-  }
+  },
+  "enabled": true
 }
